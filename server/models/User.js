@@ -10,13 +10,15 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     credits: { type: Number, default: 0 },
     freeAnalysisCount: { type: Number, default: 0 },
-    freeAnalysisDate: { type: String, default: null }, // store as YYYY-MM-DD
-    // additional profile fields and plan information can be added here
+    freeAnalysisDate: { type: String, default: null }, // stored as YYYY-MM-DD
+    // --- Password reset fields ---
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );
 
-// Pre-save hook: hash password if modified
+// Pre-save hook: hash password if modified.
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
@@ -28,7 +30,7 @@ UserSchema.pre('save', async function (next) {
   }
 });
 
-// Instance method: compare password
+// Instance method: compare password.
 UserSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };

@@ -9,7 +9,6 @@ function VideoEditor({ videoFile, censorshipData }) {
   const [outputVideoUrl, setOutputVideoUrl] = useState(null);
   const [processing, setProcessing] = useState(false);
 
-  // Load FFmpeg on component mount.
   useEffect(() => {
     const loadFFmpeg = async () => {
       try {
@@ -22,57 +21,59 @@ function VideoEditor({ videoFile, censorshipData }) {
     loadFFmpeg();
   }, []);
 
-  // Handler to process the video.
+  // Build a dynamic filter_complex string based on multiple flagged segments.
+  const buildFilterGraph = (segments) => {
+    // Write each effect file into the FS and build an input mapping.
+    let filterInputs = [];
+    let filterDelays = [];
+    segments.forEach((segment, index) => {
+      const effectFile = `${segment.effect.toLowerCase()}.mp3`;
+      // Each effect file should have been preloaded in FFmpeg FS.
+      filterInputs.push(`[${index + 1}:a]adelay=${Math.floor(segment.start * 1000)}|${Math.floor(segment.start * 1000)}[sfx${index}]`);
+      // Later, all effect audio streams will be mixed.
+      filterDelays.push(`[sfx${index}]`);
+    });
+    // Combine original audio [0:a] with all delayed effect streams.
+    const mixInputs = ['[0:a]', ...filterDelays].join('');
+    const filterGraph = `${filterInputs}; ${mixInputs}amix=inputs=${segments.length + 1}:duration=first:dropout_transition=2[aout]`;
+    return filterGraph;
+  };
+
   const handleEditVideo = async () => {
     if (!ready) return;
     setProcessing(true);
 
     try {
-      // Write the input video file into FFmpeg's in-memory file system.
       ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(videoFile));
 
-      // Process censorship if there’s at least one segment.
-      // (For simplicity, we demo one censorship segment. In production, loop over segments
-      //  and construct an appropriate filtergraph.)
-      if (censorshipData.length > 0) {
-        const segment = censorshipData[0];
-        const effectName = segment.effect.toLowerCase(); // e.g., "beep"
-        const effectFileName = `${effectName}.mp3`;
-
-        // Fetch the chosen sound effect from the public folder.
-        const effectResponse = await fetch(`/sound-effects/${effectFileName}`);
-        if (!effectResponse.ok) {
-          throw new Error(`Failed to load sound effect: ${effectFileName}`);
-        }
-        const effectData = new Uint8Array(await effectResponse.arrayBuffer());
-        ffmpeg.FS('writeFile', effectFileName, effectData);
-
-        // Calculate delay in milliseconds.
-        const delay = Math.floor(segment.start * 1000);
-        // Build a filtergraph that delays the effect audio and mixes it with the original audio.
-        // This command mutes nothing but overlays the sound effect at the given timestamp.
-        // For a production-grade solution you may wish to mute the original audio during the segment.
-        const filterComplex = `[1:a]adelay=${delay}|${delay}[sfx]; [0:a][sfx]amix=inputs=2:duration=first:dropout_transition=2[aout]`;
-
-        await ffmpeg.run(
-          '-i', 'input.mp4',
-          '-i', effectFileName,
-          '-filter_complex', filterComplex,
-          '-map', '0:v',
-          '-map', '[aout]',
-          '-c:v', 'copy',
-          'output.mp4'
-        );
-      } else {
-        // If there’s no censorship data, simply copy the file.
-        await ffmpeg.run('-i', 'input.mp4', 'output.mp4');
+      // Preload all sound effect files.
+      const effects = ['beep', 'honk', 'mute', 'quack', 'boom', 'trumpet'];
+      for (const effect of effects) {
+        const res = await fetch(`/sound-effects/${effect}.mp3`);
+        if (!res.ok) throw new Error(`Failed to load sound effect ${effect}.mp3`);
+        const effectData = new Uint8Array(await res.arrayBuffer());
+        ffmpeg.FS('writeFile', `${effect}.mp3`, effectData);
       }
 
-      // Read the output file and create a URL.
+      let args = [];
+      if (censorshipData && censorshipData.length > 0) {
+        // Build input arguments: original video plus one input per sound effect (order matters).
+        args = ['-i', 'input.mp4'];
+        // Add each sound effect file as a separate input (assume each flagged segment uses its corresponding effect).
+        censorshipData.forEach((segment) => {
+          args.push('-i', `${segment.effect.toLowerCase()}.mp3`);
+        });
+        const filterComplex = buildFilterGraph(censorshipData);
+        args.push('-filter_complex', filterComplex, '-map', '0:v', '-map', '[aout]', '-c:v', 'copy', 'output.mp4');
+      } else {
+        args = ['-i', 'input.mp4', 'output.mp4'];
+      }
+
+      await ffmpeg.run(...args);
+
       const data = ffmpeg.FS('readFile', 'output.mp4');
       const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
-      const url = URL.createObjectURL(videoBlob);
-      setOutputVideoUrl(url);
+      setOutputVideoUrl(URL.createObjectURL(videoBlob));
     } catch (error) {
       console.error('Video editing error:', error);
       alert('Video editing failed. Please try again.');

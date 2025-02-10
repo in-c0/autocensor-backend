@@ -1,7 +1,7 @@
 // server/routes/analysisRoutes.js
 import express from 'express';
 import jwtAuthMiddleware from '../middleware/auth.js';
-import User from '../models/User.js';
+import User from '../server/models/User.js';
 import { transcriptionQueue } from '../queue.js';
 import logger from '../logger.js';
 

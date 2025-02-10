@@ -12,19 +12,16 @@ const router = express.Router();
 async function sendVerificationEmail(user, token) {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
+    port: parseInt(process.env.SMTP_PORT),
     secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
   const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: user.email,
     subject: 'Verify Your Email',
-    text: `Click to verify your email: ${verifyUrl}`,
+    text: `Click the following link to verify your email: ${verifyUrl}`,
   });
 }
 
@@ -32,12 +29,12 @@ async function sendVerificationEmail(user, token) {
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    // (Add further input validation as needed)
+    // Add additional validation as needed.
     const user = new User({ username, email, password });
     await user.save();
     const emailToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     await sendVerificationEmail(user, emailToken);
-    res.status(201).json({ message: 'Registration successful. Verify your email to log in.' });
+    res.status(201).json({ message: 'Registration successful. Check your email for verification.' });
   } catch (error) {
     logger.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed: ' + error.message });
@@ -84,10 +81,26 @@ router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: 'Email not found.' });
+    // Generate a token and set expiry (e.g. 1 hour).
     const resetToken = crypto.randomBytes(32).toString('hex');
-    // In production, store resetToken (hashed) and expiry on the user document.
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&email=${email}`;
-    // Send email (configure transporter as above)
+    // Send email with resetUrl.
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: 'Password Reset',
+      text: `Click the link to reset your password: ${resetUrl}`,
+    });
     res.json({ message: 'Password reset link sent.' });
   } catch (error) {
     logger.error('Forgot password error:', error);
@@ -99,10 +112,18 @@ router.post('/forgot-password', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
   try {
     const { email, token, newPassword } = req.body;
-    // Verify token (depending on your storage mechanism)
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: 'Invalid request.' });
+    if (!email || !token || !newPassword)
+      return res.status(400).json({ error: 'Email, token, and new password are required.' });
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+      email,
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) return res.status(400).json({ error: 'Invalid or expired token.' });
     user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
     await user.save();
     res.json({ message: 'Password reset successful.' });
   } catch (error) {
