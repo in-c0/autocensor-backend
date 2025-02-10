@@ -3,52 +3,35 @@ import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import logger from './logger.js';
-import { addTranscriptionJob, getTranscriptionJobStatus } from './transcription.js';
+import authRoutes from './routes/authRoutes.js';
+import fileRoutes from './routes/fileRoutes.js';
+import analysisRoutes from './routes/analysisRoutes.js';
+import stripeRoutes from './routes/stripeRoutes.js';
 
 const app = express();
 
-// Parse JSON payloads.
 app.use(express.json());
-
-// Secure your app with Helmet.
 app.use(helmet());
+app.use(
+  rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 100, // max 100 requests per minute
+  })
+);
 
-// Rate limiting: restrict each IP to 60 requests per minute.
-const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 60, // limit each IP to 60 requests per minute
-});
-app.use(limiter);
+// Mount API routes.
+app.use('/api/auth', authRoutes);
+app.use('/api/files', fileRoutes);
+app.use('/api', analysisRoutes);
+app.use('/api/stripe', stripeRoutes);
 
-// Sample endpoint to enqueue a transcription job.
-// POST /api/TranscribeAudio
-app.post('/api/TranscribeAudio', async (req, res) => {
-  try {
-    const { fileUrl } = req.body;
-    if (!fileUrl) {
-      return res.status(400).json({ error: 'fileUrl is required' });
-    }
-    const jobInfo = await addTranscriptionJob({ fileUrl });
-    // Return HTTP 202 Accepted.
-    res.status(202).json(jobInfo);
-  } catch (error) {
-    logger.error('Error in /api/TranscribeAudio', error);
-    res.status(500).json({ error: error.message });
-  }
+// Global error handler.
+app.use((err, req, res, next) => {
+  logger.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// Endpoint to check the status of a transcription job.
-// GET /api/TranscriptionStatus/:jobId
-app.get('/api/TranscriptionStatus/:jobId', async (req, res) => {
-  try {
-    const { jobId } = req.params;
-    const status = await getTranscriptionJobStatus({ jobId });
-    res.json(status);
-  } catch (error) {
-    logger.error('Error in /api/TranscriptionStatus', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
 
-// Export the app for use by Wasp or as a standalone server.
 export default app;

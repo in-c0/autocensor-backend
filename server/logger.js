@@ -8,15 +8,8 @@ const myFormat = printf(({ level, message, timestamp, stack }) => {
 
 const logger = winston.createLogger({
   level: 'info',
-  format: combine(
-    timestamp(),
-    errors({ stack: true }), // Print stack trace if available.
-    myFormat
-  ),
-  transports: [
-    new winston.transports.Console()
-    // You can add file transports or external logging services here.
-  ],
+  format: combine(timestamp(), errors({ stack: true }), myFormat),
+  transports: [new winston.transports.Console()],
 });
 
 export default logger;
