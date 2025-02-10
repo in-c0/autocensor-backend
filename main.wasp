@@ -1,0 +1,16 @@
+// main.wasp
+app AutoCensor {
+  title: "AutoCensor"
+  clientDir: "client"
+  serverDir: "server"
+  port: 3000
+}
+
+route "/" -> page "MainPage"   // This will load client/src/App.js as your main page
+
+// An action to run transcription using Deepgram.
+// The action receives a file URL (or binary data if you prefer) and returns the transcript.
+action TranscribeAudio {
+  fn: "transcription.transcribeAudio"
+  args: { fileUrl: string }
+}
