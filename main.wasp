@@ -6,11 +6,16 @@ app AutoCensor {
   port: 3000
 }
 
-route "/" -> page "MainPage"   // This will load client/src/App.js as your main page
+route "/" -> page "MainPage"
 
-// An action to run transcription using Deepgram.
-// The action receives a file URL (or binary data if you prefer) and returns the transcript.
+// The action now enqueues a transcription job.
 action TranscribeAudio {
-  fn: "transcription.transcribeAudio"
+  fn: "transcription.addTranscriptionJob"
   args: { fileUrl: string }
+}
+
+// Optionally, you can add an action to poll job status:
+action GetTranscriptionStatus {
+  fn: "transcription.getTranscriptionJobStatus"
+  args: { jobId: string }
 }
