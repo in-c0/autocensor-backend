@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for autocensor-backend-little-water-2144 on 2025-02-10T17:02:14+11:00
+# fly.toml app configuration file generated for autocensor-backend-lively-feather-1251 on 2025-02-10T17:42:18+11:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'autocensor-backend-little-water-2144'
+app = 'autocensor-backend-lively-feather-1251'
 primary_region = 'syd'
 
 [http_service]
