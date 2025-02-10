@@ -1,18 +1,18 @@
-# fly.toml app configuration file generated for autocensor-app on 2025-02-10T16:58:07+11:00
+# fly.toml app configuration file generated for autocensor-backend-little-water-2144 on 2025-02-10T17:02:14+11:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'autocensor-app'
+app = 'autocensor-backend-little-water-2144'
 primary_region = 'syd'
 
-[build]
-  builder = 'heroku/buildpacks:20'
-
-[env]
-  DEEPGRAM_API_KEY = 'YOUR_DEEPGRAM_API_KEY'
-  NODE_ENV = 'production'
-  PORT = '3000'
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
 
 [[vm]]
   memory = '1gb'
