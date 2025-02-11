@@ -1,37 +1,28 @@
 // server/index.js
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import logger from './logger.js';
+import cors from 'cors';
+import mongoose from 'mongoose';
+
 import authRoutes from './routes/authRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
 import analysisRoutes from './routes/analysisRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
-app.use(helmet());
-app.use(
-  rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 100,
-  })
-);
 
-// Mount API routes.
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
-app.use('/api', analysisRoutes);
+app.use('/api/analyze', analysisRoutes);
 app.use('/api/stripe', stripeRoutes);
 
-// Global error handler.
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
-
-export default app;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

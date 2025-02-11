@@ -1,22 +1,18 @@
-# fly.toml app configuration file generated for autocensor-backend on 2025-02-11T02:01:20+11:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
-app = 'autocensor-backend'
-primary_region = 'syd'
+app = "autocensor-backend"
+kill_signal = "SIGINT"
+kill_timeout = 5
 
 [build]
+  builder = "heroku/buildpacks:20"
 
-[http_service]
-  internal_port = 3000
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
-
-[[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
-  cpus = 1
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  MONGO_URI = "your_mongo_uri"
+  JWT_SECRET = "your_jwt_secret"
+  AWS_ACCESS_KEY_ID = "your_aws_access_key"
+  AWS_SECRET_ACCESS_KEY = "your_aws_secret_key"
+  AWS_REGION = "your_aws_region"
+  S3_BUCKET = "your_s3_bucket"
+  STRIPE_SECRET_KEY = "your_stripe_secret_key"
+  FRONTEND_URL = "https://autocensor-landingpage.fly.dev"

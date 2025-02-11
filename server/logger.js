@@ -1,17 +1,14 @@
-// Correct: CommonJS syntax
-const winston = require('winston');
+import winston from 'winston';
+const { combine, timestamp, printf, errors } = winston.format;
+
+const myFormat = printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} ${level}: ${stack || message}`;
+});
 
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message, stack }) => {
-      return `${timestamp} ${level}: ${stack || message}`;
-    })
-  ),
-  transports: [
-    new winston.transports.Console()
-  ],
+  format: combine(timestamp(), errors({ stack: true }), myFormat),
+  transports: [new winston.transports.Console()],
 });
 
-module.exports = logger;
+export default logger;

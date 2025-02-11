@@ -1,8 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const logger = require('./server/logger'); // Ensure logger.js exists
+// server.js
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import logger from './server/logger.js'; // Note the .js extension
 
 const app = express();
 app.use(cors());

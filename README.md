@@ -22,35 +22,25 @@ AutoCensor/
 │   │       ├── boom.mp3
 │   │       └── trumpet.mp3
 │   └── src/
-│       ├── App.js                  // Main page (file upload, credit purchase UI, etc.)
+│       ├── App.js                  // (Frontend implementation, not covered here)
 │       └── components/
-│           ├── FileUpload.js       // Handles S3 presigned URL upload with progress
-│           └── VideoEditor.js      // Uses ffmpeg.wasm to overlay sound effects dynamically
+│           ├── FileUpload.js       // File upload with progress (using presigned URLs)
+│           └── VideoEditor.js      // Video editor (using ffmpeg.wasm for overlaying sound effects)
 ├── server/
-│   ├── index.js                    // Express entry point (mounts routes, security middleware, etc.)
-│   ├── logger.js                   // Winston logger configuration
-│   ├── s3.js                       // AWS S3 integration (presigned URL generation)
-│   ├── stripe.js                   // Stripe integration (checkout session creation)
-│   ├── queue.js                    // Bull queue configuration (for transcription/analysis jobs)
-│   ├── transcription.js            // API functions to enqueue transcription/analysis jobs and check credit usage
-│   ├── transcriptionWorker.js      // Worker that calls Deepgram and processes the file
+│   ├── index.js                    // Express entry point
 │   ├── models/
-│   │   ├── User.js                 // Extended Mongoose User model (with password reset tokens, credits, etc.)
-│   │   └── AnalysisResult.js       // New model to store analysis results
-│   └── routes/
-│       ├── authRoutes.js           // Endpoints: register, login, email verification, password reset (with token storage/verification)
-│       ├── fileRoutes.js           // Endpoint: generate S3 presigned URL for direct upload
-│       ├── analysisRoutes.js       // Endpoints: /analyze, /reanalyze, etc. (checks free analysis & credits)
-│       └── stripeRoutes.js         // Endpoints: create checkout session and handle Stripe webhooks (secured)
-├── tests/
-│   ├── unit/                       // Jest unit tests (e.g., for auth, S3, analysis)
-│   │   └── auth.test.js
-│   └── e2e/                        // Cypress end-to-end tests
-│       └── fileUpload.spec.js
-├── .github/
-│   └── workflows/
-│       └── nodejs.yml              // GitHub Actions CI/CD pipeline configuration
-├── main.wasp                     // Wasp configuration (declares actions, routes, etc.)
+│   │   ├── User.js                 // User model with minimal fields and credit count
+│   │   └── Analysis.js             // Analysis results (stores file key and transcript)
+│   ├── routes/
+│   │   ├── authRoutes.js           // /api/auth/register & /api/auth/login endpoints
+│   │   ├── fileRoutes.js           // /api/files/upload-url endpoint
+│   │   ├── analysisRoutes.js       // /api/analyze endpoint
+│   │   └── stripeRoutes.js         // /api/stripe/create-checkout-session endpoint
+│   └── utils/
+│       ├── s3.js                   // AWS S3 presigned URL generator
+│       └── stripe.js               // Stripe checkout session creator
+├── package.json
 └── fly.toml                      // Fly.io deployment configuration
+
 
 ```
