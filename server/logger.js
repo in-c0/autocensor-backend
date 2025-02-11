@@ -1,15 +1,17 @@
-// server/logger.js
-import winston from 'winston';
-const { combine, timestamp, printf, errors } = winston.format;
-
-const myFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} ${level}: ${stack || message}`;
-});
+// Correct: CommonJS syntax
+const winston = require('winston');
 
 const logger = winston.createLogger({
   level: 'info',
-  format: combine(timestamp(), errors({ stack: true }), myFormat),
-  transports: [new winston.transports.Console()],
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message, stack }) => {
+      return `${timestamp} ${level}: ${stack || message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console()
+  ],
 });
 
-export default logger;
+module.exports = logger;

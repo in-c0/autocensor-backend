@@ -1,19 +1,17 @@
-# fly.toml app configuration file generated for autocensor-backend-lively-feather-1251 on 2025-02-10T17:42:18+11:00
+# fly.toml app configuration file generated for autocensor-backend on 2025-02-11T02:01:20+11:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'autocensor-backend-lively-feather-1251'
+app = 'autocensor-backend'
 primary_region = 'syd'
 
-[env]
-  NODE_ENV = "production"
-  PORT = "3000"
+[build]
 
 [http_service]
-  internal_port = 8080
+  internal_port = 3000
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
