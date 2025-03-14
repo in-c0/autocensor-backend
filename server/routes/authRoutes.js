@@ -1,35 +1,29 @@
 // server/routes/authRoutes.js
 import express from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import passport from 'passport';
 
 const router = express.Router();
 
-// Register endpoint
-router.post('/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const user = new User({ username, email, password });
-    await user.save();
-    res.status(201).json({ message: 'Registration successful.' });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// Initiate Google OAuth
+router.get('/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
 
-// Login endpoint
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: 'Invalid credentials.' });
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials.' });
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { username: user.username, email: user.email, credits: user.credits } });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+// Handle OAuth callback
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect to your frontend.
+    res.redirect(process.env.FRONTEND_URL);
   }
+);
+
+// Logout route
+router.get('/logout', (req, res, next) => {
+  req.logout(function (err) {
+    if (err) { return next(err); }
+    res.redirect(process.env.FRONTEND_URL);
+  });
 });
 
 export default router;

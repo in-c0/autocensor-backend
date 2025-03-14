@@ -13,7 +13,7 @@ export function generatePresignedUrl(fileName, fileType) {
   const params = {
     Bucket: process.env.S3_BUCKET,
     Key: key,
-    Expires: 3600, // 1 hour
+    Expires: 3600, // URL valid for 1 hour
     ContentType: fileType,
   };
 

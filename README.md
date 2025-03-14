@@ -22,25 +22,25 @@ AutoCensor/
 │   │       ├── boom.mp3
 │   │       └── trumpet.mp3
 │   └── src/
-│       ├── App.js                  // (Frontend implementation, not covered here)
+│       ├── App.js                  // Frontend (not detailed here)
 │       └── components/
-│           ├── FileUpload.js       // File upload with progress (using presigned URLs)
-│           └── VideoEditor.js      // Video editor (using ffmpeg.wasm for overlaying sound effects)
+│           ├── FileUpload.js       // File upload with presigned URL and progress
+│           └── VideoEditor.js      // Video editor using ffmpeg.wasm for sound effects
 ├── server/
 │   ├── index.js                    // Express entry point
+│   ├── passportConfig.js           // Passport configuration for Google OAuth
 │   ├── models/
-│   │   ├── User.js                 // User model with minimal fields and credit count
-│   │   └── Analysis.js             // Analysis results (stores file key and transcript)
+│   │   ├── User.js                 // User model (with basic fields and credits)
+│   │   └── Analysis.js             // Analysis results model (file key, transcript, etc.)
 │   ├── routes/
-│   │   ├── authRoutes.js           // /api/auth/register & /api/auth/login endpoints
-│   │   ├── fileRoutes.js           // /api/files/upload-url endpoint
-│   │   ├── analysisRoutes.js       // /api/analyze endpoint
-│   │   └── stripeRoutes.js         // /api/stripe/create-checkout-session endpoint
+│   │   ├── authRoutes.js           // OAuth endpoints (login, callback, logout)
+│   │   ├── fileRoutes.js           // Endpoint for generating S3 presigned URLs
+│   │   ├── analysisRoutes.js       // Endpoint for analysis (requires authentication)
+│   │   └── stripeRoutes.js         // Endpoint for creating a Stripe checkout session
 │   └── utils/
 │       ├── s3.js                   // AWS S3 presigned URL generator
 │       └── stripe.js               // Stripe checkout session creator
 ├── package.json
 └── fly.toml                      // Fly.io deployment configuration
-
 
 ```
