@@ -1,6 +1,6 @@
 // server/routes/stripeRoutes.js
 import express from 'express';
-import { createCheckoutSession } from '../utils/stripe.js';
+import { createCheckoutSession } from '../stripe.js';
 
 const router = express.Router();
 

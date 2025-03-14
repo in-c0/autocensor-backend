@@ -1,6 +1,6 @@
 // server/routes/fileRoutes.js
 import express from 'express';
-import { generatePresignedUrl } from '../utils/s3.js';
+import { generatePresignedUrl } from '../s3.js';
 
 const router = express.Router();
 
