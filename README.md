@@ -15,6 +15,11 @@ Run server locally:
 node server/index.js
 ```
 
+Configure TLS version >1.2:
+
+```bash
+$env:NODE_OPTIONS="--tls-min-v1.2"
+```
 
 TODO:
 
