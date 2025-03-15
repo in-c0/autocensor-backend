@@ -17,10 +17,16 @@ import analysisRoutes from './routes/analysisRoutes.js';
 import stripeRoutes from './routes/stripeRoutes.js';
 
 const app = express();
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+  ? process.env.FRONTEND_URL
+  : 'http://localhost:3000';
+const MONGO_URI = process.env.NODE_ENV === 'production'
+  ? process.env.MONGO_URI
+  : process.env.MONGO_URI + '&tlsAllowInvalidCertificates=true' // bypass tls certs in local development
 
 // Enable CORS (adjust the origin as needed)
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: FRONTEND_URL,
   credentials: true
 }));
 
@@ -44,7 +50,7 @@ app.use('/api/analyze', analysisRoutes);
 app.use('/api/stripe', stripeRoutes);
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 

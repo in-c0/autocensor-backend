@@ -1,6 +1,9 @@
-// server/utils/stripe.js
+// server/stripe.js
 import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2020-08-27' });
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+  ? process.env.FRONTEND_URL
+  : 'http://localhost:3000';
 
 export async function createCheckoutSession({ userId, amount }) {
   const session = await stripe.checkout.sessions.create({
@@ -19,8 +22,8 @@ export async function createCheckoutSession({ userId, amount }) {
         quantity: 1,
       },
     ],
-    success_url: `${process.env.FRONTEND_URL}/success`,
-    cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+    success_url: `${FRONTEND_URL}/success`,
+    cancel_url: `${FRONTEND_URL}/cancel`,
     metadata: { userId },
   });
   return session;

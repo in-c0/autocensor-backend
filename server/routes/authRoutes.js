@@ -4,6 +4,10 @@ import passport from 'passport';
 
 const router = express.Router();
 
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+  ? process.env.FRONTEND_URL
+  : 'http://localhost:3000';
+
 // Initiate Google OAuth
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
@@ -14,7 +18,7 @@ router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
     // Successful authentication, redirect to your frontend.
-    res.redirect(process.env.FRONTEND_URL);
+    res.redirect(FRONTEND_URL);
   }
 );
 
@@ -22,7 +26,7 @@ router.get('/google/callback',
 router.get('/logout', (req, res, next) => {
   req.logout(function (err) {
     if (err) { return next(err); }
-    res.redirect(process.env.FRONTEND_URL);
+    res.redirect(FRONTEND_URL);
   });
 });
 
