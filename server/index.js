@@ -22,7 +22,10 @@ const FRONTEND_URL = process.env.NODE_ENV === 'production'
   : 'http://localhost:3000';
 const MONGO_URI = process.env.NODE_ENV === 'production'
   ? process.env.MONGO_URI
-  : process.env.MONGO_URI + '&tlsAllowInvalidCertificates=true' // bypass tls certs in local development
+  : process.env.MONGO_URI.includes('?')
+    ? process.env.MONGO_URI + '&tlsAllowInvalidCertificates=true'
+    : process.env.MONGO_URI + '?tlsAllowInvalidCertificates=true'
+    // bypass tls certs in local development, ensure it has “?” for query parameters
 
 // Enable CORS (adjust the origin as needed)
 app.use(cors({
