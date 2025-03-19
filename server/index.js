@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 // server/index.js
 import dotenv from 'dotenv';
 dotenv.config();
@@ -20,12 +22,6 @@ const app = express();
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
   ? process.env.FRONTEND_URL
   : 'http://localhost:3000';
-const MONGO_URI = process.env.NODE_ENV === 'production'
-  ? process.env.MONGO_URI
-  : process.env.MONGO_URI.includes('?')
-    ? process.env.MONGO_URI + '&tlsAllowInvalidCertificates=true'
-    : process.env.MONGO_URI + '?tlsAllowInvalidCertificates=true'
-    // bypass tls certs in local development, ensure it has “?” for query parameters
 
 // Enable CORS (adjust the origin as needed)
 app.use(cors({
@@ -53,9 +49,13 @@ app.use('/api/analyze', analysisRoutes);
 app.use('/api/stripe', stripeRoutes);
 
 // Connect to MongoDB
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  tlsAllowInvalidCertificates: true
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
