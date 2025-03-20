@@ -71,6 +71,11 @@ Using the returned presigned URL, create a PUT request in Postman:
  - In the Body tab, select binary and choose the file (sample.mp4) from your system.
  - Send the request. A 200 OK response indicates the file was successfully uploaded. You can verify this in your S3 console.
 
+### api/analyze
+
+Retrieve the session cookie from your browser’s Developer Tools (under Application → Cookies).
+Then, in Postman, add this cookie to your request by adding it in the header key: 'Cookie' and value: 'connect.sid=...'
+
 
 TODO:
 
