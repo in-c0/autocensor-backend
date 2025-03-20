@@ -66,10 +66,10 @@ with a raw JSON body:
 ```
 The response will contain a `url` (presigned URL) and a `key` (S3 object key).
 Using the returned presigned URL, create a PUT request in Postman:
-    - Set the URL to the presigned URL from the response.
-    - In the Headers tab, set Content-Type to video/mp4.
-    - In the Body tab, select binary and choose the file (sample.mp4) from your system.
-    - Send the request. A 200 OK response indicates the file was successfully uploaded. You can verify this in your S3 console.
+ - Set the URL to the presigned URL from the response.
+ - In the Headers tab, set Content-Type to video/mp4.
+ - In the Body tab, select binary and choose the file (sample.mp4) from your system.
+ - Send the request. A 200 OK response indicates the file was successfully uploaded. You can verify this in your S3 console.
 
 
 TODO:
