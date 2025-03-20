@@ -73,6 +73,18 @@ Using the returned presigned URL, create a PUT request in Postman:
 
 ### api/analyze
 
+With an authenticated session (include the session cookie if testing via Postman), send a POST request to:
+```bash
+http://localhost:3000/api/analyze
+```
+with a JSON body:
+```json
+{
+  "fileKey": "uploads/your-uploaded-file-key",
+  "fileUrl": "https://your-s3-bucket.s3.amazonaws.com/uploads/your-uploaded-file-key"
+}
+```
+
 Retrieve the session cookie from your browser’s Developer Tools (under Application → Cookies).
 Then, in Postman, add this cookie to your request by adding it in the header key: 'Cookie' and value: 'connect.sid=...'
 
