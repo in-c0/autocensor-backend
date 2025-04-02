@@ -19,13 +19,14 @@ router.post('/', isAuthenticated, async (req, res) => {
     if (!fileKey || !fileUrl)
       return res.status(400).json({ error: 'fileKey and fileUrl are required.' });
 
-    // Deduct a credit from the user
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: 'User not found.' });
-    if (user.credits <= 0)
-      return res.status(402).json({ error: 'Insufficient credits. Please purchase more.' });
-    user.credits -= 1;
-    await user.save();
+
+    console.log({
+      user: user._id,
+      fileKey,
+      transcript: '',
+    });
 
     // Create an Analysis record with an empty transcript
     const newAnalysis = await Analysis.create({
@@ -45,6 +46,12 @@ router.post('/', isAuthenticated, async (req, res) => {
     } catch (err) {
     res.status(500).json({ error: err.message });
     }
+  
+    if (user.credits <= 0)
+      return res.status(402).json({ error: 'Insufficient credits. Please purchase more.' });
+    user.credits -= 1;
+    await user.save();
+
 });
 
 router.get('/result', isAuthenticated, async (req, res) => {
