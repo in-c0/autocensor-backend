@@ -1,13 +1,9 @@
 // server/transcriptionWorker.js
 import axios from 'axios';
 import logger from './logger.js';
+import Analysis from './models/Analysis.js';
 
-/**
- * transcribeAudioWorker - Calls Deepgram API to transcribe and then process the file.
- * @param {Object} data - { fileUrl, fileKey, userId, isFree }
- * @returns {Object} - The transcription result.
- */
-export async function transcribeAudioWorker({ fileUrl, fileKey, userId, isFree }) {
+export async function transcribeAudioWorker({ fileUrl, analysisId }) {
   try {
     const deepgramEndpoint = 'https://api.deepgram.com/v1/listen?punctuate=true';
     const response = await axios.post(
@@ -22,9 +18,20 @@ export async function transcribeAudioWorker({ fileUrl, fileKey, userId, isFree }
       }
     );
     logger.info('Deepgram transcription successful');
-    // Here, parse response.data to extract flagged words with timestamps.
-    // Then, trigger video editing (using ffmpeg.wasm on the client) or further processing.
-    return response.data;
+    
+    // Extract the transcript from the response.
+    // (This depends on Deepgram's response structure; adjust as needed.)
+    const transcript =
+      response.data.results &&
+      response.data.results.channels &&
+      response.data.results.channels[0].alternatives[0].transcript
+        ? response.data.results.channels[0].alternatives[0].transcript
+        : '';
+
+    // Update the Analysis record with the transcript.
+    await Analysis.findByIdAndUpdate(analysisId, { transcript });
+
+    return transcript;
   } catch (error) {
     logger.error('Error in transcription worker:', error);
     throw new Error('Transcription failed.');

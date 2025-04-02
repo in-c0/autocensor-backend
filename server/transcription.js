@@ -7,12 +7,13 @@ import logger from './logger.js';
  * @param {object} args - { fileUrl: string }
  * @returns {object} - { jobId: string }
  */
-export async function addTranscriptionJob({ fileUrl }) {
+export async function addTranscriptionJob({ fileUrl, analysisId }) {
   if (!fileUrl) {
     throw new Error('fileUrl is required');
   }
   try {
-    const job = await transcriptionQueue.add({ fileUrl });
+    // Include analysisId in the job data
+    const job = await transcriptionQueue.add({ fileUrl, analysisId });
     logger.info(`Enqueued transcription job ${job.id}`);
     return { jobId: job.id };
   } catch (error) {
@@ -20,7 +21,6 @@ export async function addTranscriptionJob({ fileUrl }) {
     throw new Error('Could not queue transcription job');
   }
 }
-
 /**
  * getTranscriptionJobStatus – Retrieves the status of a transcription job.
  * @param {object} args - { jobId: string }
