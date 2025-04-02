@@ -14,13 +14,14 @@ function isAuthenticated(req, res, next) {
 
 // POST /api/analyze: Enqueue a transcription job
 router.post('/', isAuthenticated, async (req, res) => {
+  
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+  
   try {
     const { fileKey, fileUrl } = req.body;
     if (!fileKey || !fileUrl)
       return res.status(400).json({ error: 'fileKey and fileUrl are required.' });
-
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ error: 'User not found.' });
 
     console.log({
       user: user._id,
